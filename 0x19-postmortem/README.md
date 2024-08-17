@@ -1,4 +1,4 @@
-# Postmortem of InteriorHealth APP WEB INFRASTRUCTURE.
+# Postmortem of InteriorHealth app containers
 
 Upon the release of our project dubbed InteriorHealth.llc for Research & project approval,
 at precisely 22:00 coordinated universal time (UTC), an outage occurred on an isolated
@@ -24,24 +24,22 @@ the server. Expected great things... only to be disappointed. `strace` gave no u
 information.
 
 23:22 utc
-Then the gods of code came through( capital G btw sorry) and i decided to ping the database server to ensure that it is actually reacheable over a network setup. And there i found the issue. Displaying an error message telnet: Unable to connect to remote host: No route to host
-.
-
-23:26 UTC
-Quickly i ran sudo iptables -L -n | grep <port> to check if any firewalls were getting in the way. Then sudo iptables -A INPUT -p tcp --dport <port> -j ACCEPT
+Then the gods of code came through( capital G btw sorry) and i decided to ping the database server to ensure that it is actually reacheable over a network setup. then checked the rules of the firewall (which are many btw but necessary) to see if any were blocking by running sudo iptables -L -n | grep <port>
+and then yes. i found the issue glaring on my screen telnet: Unable to connect to remote host: No route to host
+and then i quickly ran sudo iptables -A INPUT -p tcp --dport <port> -j ACCEPT
 sudo iptables-save
-to allow any blocked ports causing the  issue.
-And i finally got the server to accept connections.
+to allow connection. 
+Tada!`
 
 ## Summation
 
-After examining the patient. The issues was diagnosed as a misconfig where the port handling transaction did not have listening network
+I ended up finding the root cause of the issue as a port misconfig which was not able to connect to a listening network setup/
 ## Prevention
 
-Test thoroughly  the application before deploying. This error would have arisen
+Test the application before deploying. This error would have arisen
 and could have been addressed earlier had the app been tested.
 
  Status monitoring. Enable some uptime-monitoring service such as
 [UptimeRobot](./https://uptimerobot.com/) to alert instantly upon outage of the website.
 
-And that friends is how Benj Amin (Haha i meant it) helped solved the puzzle!!
+
