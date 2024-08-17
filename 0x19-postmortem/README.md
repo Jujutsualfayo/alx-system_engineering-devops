@@ -1,4 +1,4 @@
-# Postmortem of InteriorHealth app containers
+# Postmortem of InteriorHealth APP WEB INFRASTRUCTURE.
 
 Upon the release of our project dubbed InteriorHealth.llc for Research & project approval,
 at precisely 22:00 coordinated universal time (UTC), an outage occurred on an isolated
@@ -24,32 +24,24 @@ the server. Expected great things... only to be disappointed. `strace` gave no u
 information.
 
 23:22 utc
-Then the gods of code came through( capital G btw sorry) and i decided to ping the database server to ensure that it is actually reacheable over a netwrk setup. then checked the 
+Then the gods of code came through( capital G btw sorry) and i decided to ping the database server to ensure that it is actually reacheable over a network setup. And there i found the issue. Displaying an error message telnet: Unable to connect to remote host: No route to host
+.
+
+23:26 UTC
+Quickly i ran sudo iptables -L -n | grep <port> to check if any firewalls were getting in the way. Then sudo iptables -A INPUT -p tcp --dport <port> -j ACCEPT
+sudo iptables-save
+to allow any blocked ports causing the  issue.
+And i finally got the server to accept connections.
 
 ## Summation
 
-In short, a typo. Gotta love'em. In full, the WordPress app was encountering a critical
-error in `wp-settings.php` when tyring to load the file `class-wp-locale.phpp`. The correct
-file name, located in the `wp-content` directory of the application folder, was
-`class-wp-locale.php`.
-
-Patch involved a simple fix on the typo, removing the trailing `p`.
-
+After examining the patient. The issues was diagnosed as a misconfig where the port handling transaction did not have listening network
 ## Prevention
 
-This outage was not a web server error, but an application error. To prevent such outages
-moving forward, please keep the following in mind.
-
-* Test! Test test test. Test the application before deploying. This error would have arisen
+Test thoroughly  the application before deploying. This error would have arisen
 and could have been addressed earlier had the app been tested.
 
-* Status monitoring. Enable some uptime-monitoring service such as
+ Status monitoring. Enable some uptime-monitoring service such as
 [UptimeRobot](./https://uptimerobot.com/) to alert instantly upon outage of the website.
 
-Note that in response to this error, I wrote a Puppet manifest
-[0-strace_is_your_friend.pp](https://github.com/bdbaraban/holberton-system_engineering-devops/blob/master/0x17-web_stack_debugging_3/0-strace_is_your_friend.pp)
-to automate fixing of any such identitical errors should they occur in the future. The manifest
-replaces any `phpp` extensions in the file `/var/www/html/wp-settings.php` with `php`.
-
-But of course, it will never occur again, because we're programmers, and we never make
-errors! :wink:
+And that friends is how Benj Amin (Haha i meant it) helped solved the puzzle!!
