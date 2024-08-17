@@ -24,28 +24,32 @@ the server. Expected great things... only to be disappointed. `strace` gave no u
 information.
 
 23:22 utc
-Then the gods of code came through( capital G btw sorry) and i decided to ping the database server to ensure that it is actually reacheable over a netwrk setup. then checked the groups config to allow traffic on the database port. Whilst testing the ports connectivity if by any chance it allows connections and is open i found the bug. Right there and then it read telnet: Unable to connect to remote host: Connection timed out
+Then the gods of code came through( capital G btw sorry) and i decided to ping the database server to ensure that it is actually reacheable over a netwrk setup. then checked the 
 
 ## Summation
 
-In short, a misconfig. There was no service listening on the port.
+In short, a typo. Gotta love'em. In full, the WordPress app was encountering a critical
+error in `wp-settings.php` when tyring to load the file `class-wp-locale.phpp`. The correct
+file name, located in the `wp-content` directory of the application folder, was
+`class-wp-locale.php`.
+
+Patch involved a simple fix on the typo, removing the trailing `p`.
 
 ## Prevention
 
-Load Balancing:
- Implement more robust load balancing mechanisms to better distribute traffic across the sandbox environment.
+This outage was not a web server error, but an application error. To prevent such outages
+moving forward, please keep the following in mind.
 
-Resource Allocation:
- Increase server capacity and allocate additional resources to handle peak usage times.
-Monitoring: Enhance monitoring systems to detect and alert on potential overloads before they cause system downtime.
-
-User Education: Provide users with alternative methods (e.g., SSH access via external terminals) as standard practice during outages.
-
- Test the application before deploying. This error would have arisen
+* Test! Test test test. Test the application before deploying. This error would have arisen
 and could have been addressed earlier had the app been tested.
 
- Status monitoring. Enable some uptime-monitoring service such as
-[UptimeRobot](./https://uptimerobot.com/) to alert instantly upon outage of the website
+* Status monitoring. Enable some uptime-monitoring service such as
+[UptimeRobot](./https://uptimerobot.com/) to alert instantly upon outage of the website.
 
-And that is how Chief debugking Benj Amin saved the world.
+Note that in response to this error, I wrote a Puppet manifest
+[0-strace_is_your_friend.pp](https://github.com/bdbaraban/holberton-system_engineering-devops/blob/master/0x17-web_stack_debugging_3/0-strace_is_your_friend.pp)
+to automate fixing of any such identitical errors should they occur in the future. The manifest
+replaces any `phpp` extensions in the file `/var/www/html/wp-settings.php` with `php`.
 
+But of course, it will never occur again, because we're programmers, and we never make
+errors! :wink:
